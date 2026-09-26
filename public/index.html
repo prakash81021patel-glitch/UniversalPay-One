@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>UniversalPay One - Global UPI Payments (India, Dubai & Worldwide)</title>
+  <meta name="description" content="Pay anywhere in India, Dubai (UAE), Singapore, France and worldwide with Universal UPI.">
+  <!-- Google Fonts: Google Sans / Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Canvas Confetti for Celebration -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ================================================= -->
+  <!-- 1. LOGIN & ONBOARDING SCREEN -->
+  <!-- ================================================= -->
+  <section id="loginScreen" class="auth-screen">
+    <div class="auth-container">
+      
+      <!-- Brand Logo & Global Badge -->
+      <div class="auth-brand">
+        <div class="gpay-logo-badge">
+          <span class="logo-u">U</span>
+          <span class="logo-p">P</span>
+          <span class="logo-one">1</span>
+        </div>
+        <h1 class="brand-title">UniversalPay <span>One</span></h1>
+        <p class="brand-subtitle">Global UPI • Pay in India, Dubai (UAE) & Worldwide</p>
+
+        <div class="global-acceptance-pill">
+          <span class="pulse-dot"></span>
+          <span>Accepted in 🇮🇳 India • 🇦🇪 Dubai • 🇸🇬 Singapore • 🇫🇷 France</span>
+        </div>
+      </div>
+
+      <!-- Step 1: Phone Input Card -->
+      <div id="phoneStepCard" class="auth-card">
+        <h2 class="auth-heading">Sign in with Mobile</h2>
+        <p class="auth-caption">Enter your registered mobile number from any country</p>
+
+        <form id="phoneLoginForm" onsubmit="event.preventDefault(); handleSendOtp();">
+          <div class="input-phone-group">
+            <div class="country-dial-select" onclick="openCountryPickerModal('login')">
+              <span id="loginSelectedFlag">🇮🇳</span>
+              <span id="loginSelectedCode">+91</span>
+              <i data-lucide="chevron-down" class="icon-sm"></i>
+            </div>
+            <input type="tel" id="loginPhoneInput" placeholder="Mobile Number" value="9876543210" required maxlength="15" autocomplete="tel">
+          </div>
+
+          <button type="submit" id="btnSendOtp" class="btn-primary btn-block">
+            <span>Continue</span>
+            <i data-lucide="arrow-right"></i>
+          </button>
+        </form>
+
+        <!-- Login Help / Guide CTA -->
+        <div class="login-help-trigger">
+          <button type="button" class="btn-text-guide" onclick="openHelpGuideModal()">
+            <i data-lucide="help-circle"></i>
+            <span>Need help signing in or traveling abroad? Read Guide</span>
+          </button>
+        </div>
+
+        <div class="auth-features-preview">
+          <div class="feature-item">
+            <i data-lucide="shield-check"></i>
+            <span>NPCI & NIPL Global Verified</span>
+          </div>
+          <div class="feature-item">
+            <i data-lucide="refresh-cw"></i>
+            <span>Zero Hidden FX Markup</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: OTP Verification Card (Hidden initially) -->
+      <div id="otpStepCard" class="auth-card hidden">
+        <div class="otp-header">
+          <button class="btn-icon-back" onclick="backToPhoneStep()">
+            <i data-lucide="arrow-left"></i>
+          </button>
+          <div>
+            <h2 class="auth-heading">Verify OTP</h2>
+            <p class="auth-caption">Sent to <strong id="otpTargetDisplay">+91 9876543210</strong></p>
+          </div>
+        </div>
+
+        <!-- Demo OTP Helper Banner -->
+        <div class="demo-otp-banner">
+          <div class="demo-banner-content">
+            <i data-lucide="key-round"></i>
+            <span>Demo Test OTP: <strong id="demoOtpNumber">4826</strong></span>
+          </div>
+          <button type="button" class="btn-mini-action" onclick="autofillDemoOtp()">Auto-Fill</button>
+        </div>
+
+        <form id="otpVerifyForm" onsubmit="event.preventDefault(); handleVerifyOtp();">
+          <div class="otp-inputs-wrapper">
+            <input type="text" class="otp-box" maxlength="1" id="otp_1" autofocus>
+            <input type="text" class="otp-box" maxlength="1" id="otp_2">
+            <input type="text" class="otp-box" maxlength="1" id="otp_3">
+            <input type="text" class="otp-box" maxlength="1" id="otp_4">
+          </div>
+
+          <button type="submit" id="btnVerifyOtp" class="btn-primary btn-block">
+            <span>Verify & Enter Dashboard</span>
+            <i data-lucide="check"></i>
+          </button>
+
+          <div class="otp-resend-row">
+            <span id="resendTimerText">Resend in <span id="timerCount">45</span>s</span>
+            <button type="button" id="btnResendOtp" class="btn-text-link hidden" onclick="handleSendOtp(true)">Resend OTP</button>
+          </div>
+        </form>
+
+        <button type="button" class="btn-text-guide" onclick="openHelpGuideModal('otp_issue')">
+          <i data-lucide="alert-circle"></i>
+          <span>Not getting OTP on International Roaming?</span>
+        </button>
+      </div>
+
+      <!-- Auth Footer -->
+      <div class="auth-footer">
+        <p>By continuing, you agree to UniversalPay's Terms of Service & Privacy Policy.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ================================================= -->
+  <!-- 2. MAIN APP DASHBOARD (GOOGLE PAY LOOK & FEEL) -->
+  <!-- ================================================= -->
+  <main id="mainAppScreen" class="main-app hidden">
+    
+    <!-- Top Bar with Search & Country Selector -->
+    <header class="app-header">
+      <div class="header-container">
+        <!-- Search Bar like Google Pay -->
+        <div class="gpay-search-bar" onclick="openSearchModal()">
+          <i data-lucide="search" class="search-icon"></i>
+          <span class="search-placeholder">Pay anyone, UPI ID or bill...</span>
+        </div>
+
+        <div class="header-actions">
+          <!-- Active Country Switcher (e.g. India or Dubai/UAE) -->
+          <button class="country-pill-btn" onclick="openCountryPickerModal('app')" title="Change Active Country / Region">
+            <span id="activeCountryFlag">🇦🇪</span>
+            <span id="activeCountryCodeName" class="country-name-short">Dubai (AED)</span>
+            <i data-lucide="chevron-down" class="icon-xs"></i>
+          </button>
+
+          <!-- User Profile Avatar -->
+          <div class="user-avatar-btn" onclick="openProfileModal()">
+            <img id="userAvatarImg" src="https://api.dicebear.com/7.x/bottts/svg?seed=Prakash" alt="User Avatar">
+            <span class="online-indicator"></span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="app-scroll-content">
+      
+      <!-- Cross-Border Live Banner -->
+      <div class="crossborder-status-banner">
+        <div class="cb-info">
+          <span class="live-tag">LIVE ROAMING</span>
+          <span id="currencyRateText">1 AED ≈ ₹ 22.85 INR • 0% Markup</span>
+        </div>
+        <button class="cb-toggle-btn" onclick="openCountryPickerModal('app')">
+          <span>Switch Region</span>
+          <i data-lucide="arrow-right-left" class="icon-xs"></i>
+        </button>
+      </div>
+
+      <!-- Hero Card: Linked Bank & UPI Status -->
+      <section class="hero-status-card">
+        <div class="card-bg-decoration"></div>
+        <div class="hero-top-row">
+          <div class="bank-tag">
+            <i data-lucide="landmark"></i>
+            <span id="primaryBankNameDisplay">HDFC Bank (•••• 5642)</span>
+          </div>
+          <span class="badge-global-active">
+            <i data-lucide="globe"></i> UPI Global Active
+          </span>
+        </div>
+
+        <div class="hero-balance-row">
+          <div>
+            <div class="balance-title" id="balanceTitleDisplay">Linked Bank Balance (Dubai AED)</div>
+            <div class="balance-amount-masked" id="maskedBalanceDisplay">••••••••</div>
+            <div class="balance-amount-revealed hidden" id="revealedBalanceWrapper">
+              <div class="balance-primary-text" id="revealedBalanceDisplay">3,698.05 AED</div>
+              <div class="balance-sub-inr" id="revealedBalanceSubInr">≈ ₹ 84,500.50 INR (Live Rate)</div>
+            </div>
+          </div>
+          <button class="btn-check-balance-pill" id="btnToggleBalance" onclick="handleBalanceCheckClick()">
+            <i data-lucide="eye" id="balanceEyeIcon"></i>
+            <span id="balanceBtnText">Check Balance</span>
+          </button>
+        </div>
+
+        <div class="hero-bottom-info">
+          <div class="upi-id-pill" onclick="copyUpiId()">
+            <span class="upi-label">UPI ID:</span>
+            <span id="userUpiIdDisplay">prakash@universalpay</span>
+            <i data-lucide="copy" class="icon-xs"></i>
+          </div>
+          <div class="wallet-balance-peek" onclick="openWalletModal()">
+            <span id="heroWalletDisplay">Wallet: 185.99 AED</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- GOOGLE PAY 8 ACTION GRID -->
+      <!-- ============================================== -->
+      <section class="gpay-action-section">
+        <div class="gpay-grid">
+          
+          <!-- 1. Scan any QR code -->
+          <div class="action-item" onclick="openQrPaymentModal()">
+            <div class="action-icon-circle blue">
+              <i data-lucide="qr-code"></i>
+            </div>
+            <span class="action-label">Scan any QR</span>
+          </div>
+
+          <!-- 2. Pay contacts / Phone -->
+          <div class="action-item" onclick="openPhonePayModal()">
+            <div class="action-icon-circle green">
+              <i data-lucide="phone"></i>
+            </div>
+            <span class="action-label">Pay contacts</span>
+          </div>
+
+          <!-- 3. Pay UPI ID or number -->
+          <div class="action-item" onclick="openUpiIdModal()">
+            <div class="action-icon-circle purple">
+              <i data-lucide="at-sign"></i>
+            </div>
+            <span class="action-label">Pay UPI ID</span>
+          </div>
+
+          <!-- 4. Bank transfer -->
+          <div class="action-item" onclick="openBankTransferModal()">
+            <div class="action-icon-circle orange">
+              <i data-lucide="building-2"></i>
+            </div>
+            <span class="action-label">Bank transfer</span>
+          </div>
+
+          <!-- 5. Self transfer -->
+          <div class="action-item" onclick="openSelfTransferModal()">
+            <div class="action-icon-circle teal">
+              <i data-lucide="refresh-ccw"></i>
+            </div>
+            <span class="action-label">Self transfer</span>
+          </div>
+
+          <!-- 6. Mobile recharge -->
+          <div class="action-item" onclick="openMobileRechargeModal()">
+            <div class="action-icon-circle indigo">
+              <i data-lucide="smartphone"></i>
+            </div>
+            <span class="action-label">Mobile recharge</span>
+          </div>
+
+          <!-- 7. Pay bills -->
+          <div class="action-item" onclick="openBillsModal()">
+            <div class="action-icon-circle amber">
+              <i data-lucide="receipt"></i>
+            </div>
+            <span class="action-label">Pay bills</span>
+          </div>
+
+          <!-- 8. Check bank balance -->
+          <div class="action-item" onclick="promptUpiPinForBalance()">
+            <div class="action-icon-circle red">
+              <i data-lucide="badge-dollar-sign"></i>
+            </div>
+            <span class="action-label">Check balance</span>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- People & Contacts Carousel (Google Pay Circles) -->
+      <section class="section-block">
+        <div class="section-header">
+          <h3 class="section-title">People & Payees</h3>
+          <button class="link-btn" onclick="openPhonePayModal()">Explore All</button>
+        </div>
+        <div class="horizontal-avatars-row" id="peopleAvatarsRow">
+          <!-- Dynamic loaded via JS -->
+        </div>
+      </section>
+
+      <!-- Businesses & Global Merchants (Accepting UPI Worldwide) -->
+      <section class="section-block">
+        <div class="section-header">
+          <div class="title-with-pill">
+            <h3 class="section-title">Global Merchants</h3>
+            <span class="badge-mini">Dubai • Paris • Singapore</span>
+          </div>
+          <button class="link-btn" onclick="openMerchantsModal()">View All</button>
+        </div>
+        <div class="merchants-scroll-row" id="merchantsRow">
+          <!-- Dynamic loaded via JS -->
+        </div>
+      </section>
+
+      <!-- Rewards & Scratch Cards Promo (Google Pay Style) -->
+      <section class="section-block">
+        <div class="promo-banner" onclick="openScratchCardModal()">
+          <div class="promo-content">
+            <div class="promo-badge">🎉 REWARDS UNLOCKED</div>
+            <h4>You have 1 Global UPI Scratch Card!</h4>
+            <p>Earn up to ₹500 / 25 AED cashback on your first international payment</p>
+            <span class="btn-scratch-now">Scratch Now &rarr;</span>
+          </div>
+          <div class="promo-graphic">
+            <div class="gift-box-anim">🎁</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Manage & Services List -->
+      <section class="section-block">
+        <div class="settings-card-list">
+          <div class="settings-card-item" onclick="openUpiInternationalModal()">
+            <div class="setting-item-left">
+              <div class="item-icon-box bg-blue-subtle">
+                <i data-lucide="globe-2"></i>
+              </div>
+              <div>
+                <div class="setting-item-title">UPI International Settings</div>
+                <div class="setting-item-subtitle">Manage Dubai, France & Singapore transaction limits</div>
+              </div>
+            </div>
+            <i data-lucide="chevron-right" class="chevron-icon"></i>
+          </div>
+
+          <div class="settings-card-item" onclick="promptUpiPinForBalance()">
+            <div class="setting-item-left">
+              <div class="item-icon-box bg-purple-subtle">
+                <i data-lucide="wallet-cards"></i>
+              </div>
+              <div>
+                <div class="setting-item-title">Check Bank Balance</div>
+                <div class="setting-item-subtitle">Verify UPI PIN to check available funds</div>
+              </div>
+            </div>
+            <i data-lucide="chevron-right" class="chevron-icon"></i>
+          </div>
+
+          <div class="settings-card-item" onclick="openHelpGuideModal()">
+            <div class="setting-item-left">
+              <div class="item-icon-box bg-teal-subtle">
+                <i data-lucide="help-circle"></i>
+              </div>
+              <div>
+                <div class="setting-item-title">Global UPI Guide & 24x7 Help</div>
+                <div class="setting-item-subtitle">Troubleshooting roaming, foreign QR & limits</div>
+              </div>
+            </div>
+            <i data-lucide="chevron-right" class="chevron-icon"></i>
+          </div>
+        </div>
+      </section>
+
+      <!-- Transaction History Section -->
+      <section class="section-block mb-32">
+        <div class="section-header">
+          <h3 class="section-title">Recent Transactions</h3>
+          <button class="link-btn" onclick="openAllTransactionsModal()">See All</button>
+        </div>
+        <div class="transactions-list" id="recentTransactionsList">
+          <!-- Loaded dynamically -->
+        </div>
+      </section>
+
+      <!-- App Footer / NPCI Trust Badges -->
+      <footer class="app-trust-footer">
+        <div class="trust-icons">
+          <span>NPCI</span> • <span>NIPL Global</span> • <span>Mashreq NeoPay</span> • <span>Lyra France</span>
+        </div>
+        <p>Secured with 256-Bit Bank Grade Encryption • UniversalPay One v1.0</p>
+      </footer>
+
+    </div>
+
+    <!-- Floating QR Scan Quick FAB -->
+    <button class="fab-qr-scanner" onclick="openQrPaymentModal()" title="Scan Any QR">
+      <i data-lucide="scan-line"></i>
+      <span>Scan QR</span>
+    </button>
+  </main>
+
+
+  <!-- ================================================= -->
+  <!-- 3. INTERACTIVE MODALS & WORKFLOWS -->
+  <!-- ================================================= -->
+
+  <!-- A. COUNTRY / REGION SELECTOR MODAL -->
+  <div id="countryPickerModal" class="modal-overlay hidden" onclick="handleModalOverlayClick(event, 'countryPickerModal')">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h3>Select Country / Payment Zone</h3>
+        <button class="btn-close-sheet" onclick="closeModal('countryPickerModal')"><i data-lucide="x"></i></button>
+      </div>
+      <p class="sheet-sub">UniversalPay One automatically adapts currencies, partners & QR standards.</p>
+      
+      <div class="country-list-scroll" id="countryListContainer">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- B. QR CODE SCANNER & PRESETS MODAL -->
+  <div id="qrScannerModal" class="modal-overlay hidden" onclick="handleModalOverlayClick(event, 'qrScannerModal')">
+    <div class="modal-sheet large-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h3>Scan Any UPI QR Code</h3>
+        <button class="btn-close-sheet" onclick="closeModal('qrScannerModal')"><i data-lucide="x"></i></button>
+      </div>
+      
+      <!-- Camera Viewfinder / Simulator -->
+      <div class="qr-camera-container">
+        <div class="scanner-frame">
+          <div class="scanner-laser"></div>
+          <div class="scanner-corner tl"></div>
+          <div class="scanner-corner tr"></div>
+          <div class="scanner-corner bl"></div>
+          <div class="scanner-corner br"></div>
+          <video id="qrCameraVideo" class="hidden" autoplay playsinline></video>
+          <div id="qrCameraPlaceholder" class="camera-placeholder">
+            <i data-lucide="camera" class="cam-icon"></i>
+            <p>Point camera at any Indian or International UPI QR code</p>
+            <button type="button" class="btn-secondary btn-sm" onclick="startCameraScanner()">Open Live Camera</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Demo Preset QRs (Dubai, France, India) -->
+      <div class="preset-qr-section">
+        <div class="preset-qr-title">Try Instant Demo QR Codes (India & Worldwide):</div>
+        <div class="preset-chips-grid">
+          <button class="preset-chip" onclick="simulateQrScan('carrefour.dubai@mashreq', 'Carrefour Dubai Mall', 'AE', 'AED', 85.00)">
+            <span>🇦🇪 Carrefour Dubai (85 AED)</span>
+          </button>
+          <button class="preset-chip" onclick="simulateQrScan('burjkhalifa@neopay', 'Burj Khalifa Tickets', 'AE', 'AED', 179.00)">
+            <span>🇦🇪 Burj Khalifa (179 AED)</span>
+          </button>
+          <button class="preset-chip" onclick="simulateQrScan('toureiffel@lyra', 'Eiffel Tower Paris', 'FR', 'EUR', 35.00)">
+            <span>🇫🇷 Eiffel Tower (35 EUR)</span>
+          </button>
+          <button class="preset-chip" onclick="simulateQrScan('jewelchangi@paynow', 'Jewel Changi Singapore', 'SG', 'SGD', 42.00)">
+            <span>🇸🇬 Changi Singapore (42 SGD)</span>
+          </button>
+          <button class="preset-chip" onclick="simulateQrScan('mumbaichai@okaxis', 'Mumbai Chai & Snacks', 'IN', 'INR', 60.00)">
+            <span>🇮🇳 Mumbai Merchant (₹60 INR)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Show My QR Option -->
+      <div class="sheet-action-footer">
+        <button class="btn-outline-full" onclick="showMyQrCodeModal()">
+          <i data-lucide="qr-code"></i> Show My Universal QR Code
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- C. PAYMENT EXECUTION MODAL (Amount + Currency Conversion + Recipient) -->
+  <div id="paymentModal" class="modal-overlay hidden">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h3 id="paymentModalTitle">Paying Recipient</h3>
+        <button class="btn-close-sheet" onclick="closeModal('paymentModal')"><i data-lucide="x"></i></button>
+      </div>
+
+      <div class="payment-recipient-card">
+        <div class="recipient-avatar-bubble" id="payRecipientAvatar">🏬</div>
+        <div class="recipient-meta">
+          <h4 id="payRecipientName">Dubai Mall Carrefour</h4>
+          <p id="payRecipientVpa">carrefour.dubai@mashreq</p>
+          <div class="verified-pill">
+            <i data-lucide="check-circle-2"></i> Verified UPI International Merchant
+          </div>
+        </div>
+      </div>
+
+      <!-- Amount Input with Real-Time Conversion -->
+      <div class="payment-amount-box">
+        <div class="currency-tag" id="payCurrencyTag">AED</div>
+        <input type="number" id="payAmountInput" placeholder="0" autofocus oninput="handleAmountInput(this.value)">
+      </div>
+
+      <!-- Dynamic INR Conversion Preview for International -->
+      <div class="conversion-preview-card" id="conversionPreviewCard">
+        <div class="conversion-row">
+          <span>Approx. Deduction from Bank:</span>
+          <strong id="inrConversionText">₹ 0.00 INR</strong>
+        </div>
+        <div class="conversion-row subtle">
+          <span>Live FX Rate:</span>
+          <span id="appliedFxRateText">1 AED = ₹ 22.85</span>
+        </div>
+      </div>
+
+      <!-- Bank Selector & Note -->
+      <div class="bank-selector-card">
+        <div class="bank-selector-left">
+          <i data-lucide="landmark"></i>
+          <div>
+            <div class="bank-title">Debiting from HDFC Bank</div>
+            <div class="bank-acc-sub">Savings •••• 5642 (₹ 84,500.50)</div>
+          </div>
+        </div>
+        <i data-lucide="chevron-down" class="icon-sm"></i>
+      </div>
+
+      <div class="input-note-group">
+        <input type="text" id="payNoteInput" placeholder="Add a note (e.g. Dinner, Shopping)">
+      </div>
+
+      <button type="button" class="btn-primary btn-block btn-pay-now" onclick="triggerPinAndExecutePayment()">
+        <span>Proceed to Pay</span>
+        <i data-lucide="arrow-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- D. PAY UPI ID MODAL -->
+  <div id="upiIdModal" class="modal-overlay hidden" onclick="handleModalOverlayClick(event, 'upiIdModal')">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h3>Pay UPI ID or VPA</h3>
+        <button class="btn-close-sheet" onclick="closeModal('upiIdModal')"><i data-lucide="x"></i></button>
+      </div>
+      <p class="sheet-sub">Enter any Indian UPI ID (e.g. name@okhdfcbank) or International ID (e.g. shop@mashreq)</p>
+
+      <form onsubmit="event.preventDefault(); handleVerifyAndPayUpiId();">
+        <div class="styled-input-field">
+          <label>UPI ID / Virtual Payment Address</label>
+          <div class="input-with-button">
+            <input type="text" id="inputVpaField" placeholder="e.g. rahul@okhdfcbank or merchant@mashreq" required>
+            <button type="submit" class="btn-inside-input">Verify</button>
+          </div>
+        </div>
+
+        <div class="suggested-vpa-chips">
+          <span class="chip-title">Suggestions:</span>
+          <button type="button" class="chip-pill" onclick="fillVpa('rahul@okhdfcbank')">rahul@okhdfcbank</button>
+          <button type="button" class="chip-pill" onclick="fillVpa('carrefour.dubai@mashreq')">carrefour.dubai@mashreq</button>
+          <button type="button" class="chip-pill" onclick="fillVpa('toureiffel@lyra')">toureiffel@lyra</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- E. PAY PHONE NUMBER / CONTACTS MODAL -->
+  <div id="phonePayModal" class="modal-overlay hidden" onclick="handleModalOverlayClick(event, 'phonePayModal')">
+    <div class="modal-sheet large-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h3>Pay to Mobile Number</h3>
+        <button class="btn-close-sheet" onclick="closeModal('phonePayModal')"><i data-lucide="x"></i></button>
+      </div>
+      
+      <div class="styled-input-field">
+        <label>Enter Any Indian or Global Mobile Number</label>
+        <div class="input-phone-group">
+          <input type="tel" id="payPhoneInput" placeholder="Enter mobile number" value="+91 9811223344">
+          <button type="button" class="btn-inside-input" onclick="handlePayPhoneDirect()">Pay</button>
+        </div>
+      </div>
+
+      <div class="contacts-list-container">
+        <h4 class="sub-heading">Frequent Contacts</h4>
+        <div class="contacts-list" id="modalContactsList">
+          <!-- Dynamic contacts -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- F. BANK TRANSFER (DOMESTIC & INTERNATIONAL) MODAL -->
+  <div id="bankTransferModal" class="modal-overlay hidden" onclick="handleModalOverlayClick(event, 'bankTransferModal')">
+    <div class="modal-sheet large-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h3>Bank Transfer</h3>
+        <button class="btn-close-sheet" onclick="closeModal('bankTransferModal')"><i data-lucide="x"></i></button>
+      </div>
+      <p class="sheet-sub">Transfer directly to Indian Bank Accounts or UAE/Dubai IBANs</p>
+
+      <form onsubmit="event.preventDefault(); handleBankTransferSubmit();">
+        <div class="styled-input-field">
+          <label>Recipient Bank Account Number / IBAN</label>
+          <input type="text" id="bankAccNo" placeholder="Enter Account Number or IBAN" required value="501002349811">
+        </div>
+
+        <div class="styled-input-field">
+          <label>Re-enter Account Number</label>
+          <input type="text" id="bankAccNoConfirm" placeholder="Re-enter to confirm" required value="501002349811">
+        </div>
+
+        <div class="styled-input-field">
+          <label>IFSC Code (India) or SWIFT / Bank Code (Dubai)</label>
+          <div class="input-with-button">
+            <input type="text" id="bankIfsc" placeholder="e.g. HDFC0001234 or MSREQAEADXB" required value="HDFC0001234">
+            <button type="button" class="btn-inside-input" onclick="lookupIfsc()">Lookup</button>
+          </div>
+        </div>
+
+        <div class="styled-input-field">
+          <label>Recipient Account Holder Name</label>
+          <input type="text" id="bankHolderName" placeholder="Full name as per bank records" required value="Aditya Narayan">
+        </div>
+
+        <button type="submit" class="btn-primary btn-block">
+          <span>Proceed with Bank Transfer</span>
+          <i data-lucide="arrow-right"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- G. MOBILE RECHARGE & BILL PAY MODAL -->
+  <div id="mobileRechargeModal" class="modal-overlay hidden" onclick="handleModalOverlayClick(event, 'mobileRechargeModal')">
+    <div class="modal-sheet large-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h3>Mobile Recharge (India & Global)</h3>
+        <button class="btn-close-sheet" onclick="closeModal('mobileRechargeModal')"><i data-lucide="x"></i></button>
+      </div>
+      
+      <div class="recharge-country-tabs">
+        <button class="recharge-tab active" id="tabRechargeIN" onclick="switchRechargeCountry('IN')">🇮🇳 India</button>
+        <button class="recharge-tab" id="tabRechargeAE" onclick="switchRechargeCountry('AE')">🇦🇪 UAE / Dubai</button>
+        <button class="recharge-tab" id="tabRechargeSG" onclick="switchRechargeCountry('SG')">🇸🇬 Singapore</button>
+        <button class="recharge-tab" id="tabRechargeFR" onclick="switchRechargeCountry('FR')">🇫🇷 France</button>
+      </div>
+
+      <div class="styled-input-field mt-16">
+        <label>Mobile Number to Recharge</label>
+        <input type="tel" id="rechargeMobileInput" placeholder="Mobile Number" value="9876543210">
+      </div>
+
+      <div class="plans-list-container">
+        <h4 class="sub-heading">Select Popular Pack</h4>
+        <div class="plans-grid" id="rechargePlansContainer">
+          <!-- Loaded by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- H. GOOGLE PAY AUTHENTIC 4-DIGIT UPI PIN KEYPAD MODAL -->
+  <div id="upiPinModal" class="modal-overlay hidden">
+    <div class="modal-sheet pin-sheet">
+      <div class="pin-sheet-header">
+        <div class="gpay-shield-icon">
+          <i data-lucide="shield-check"></i>
+        </div>
+        <h3>ENTER 4-DIGIT UPI PIN</h3>
+        <p id="pinModalSubtext">Authorizing payment from HDFC Bank</p>
+      </div>
+
+      <!-- 4 PIN Mask Dots -->
+      <div class="pin-dots-container">
+        <div class="pin-dot" id="dot_0"></div>
+        <div class="pin-dot" id="dot_1"></div>
+        <div class="pin-dot" id="dot_2"></div>
+        <div class="pin-dot" id="dot_3"></div>
+      </div>
+
+      <div class="pin-security-hint">
+        <i data-lucide="lock" class="icon-xs"></i>
+        <span>Demo UPI PIN is <strong>1234</strong></span>
+      </div>
+
+      <!-- Numeric Keypad (0-9) -->
+      <div class="pin-numeric-keypad">
+        <button class="key-btn" onclick="pressPinKey('1')">1</button>
+        <button class="key-btn" onclick="pressPinKey('2')">2</button>
+        <button class="key-btn" onclick="pressPinKey('3')">3</button>
+        <button class="key-btn" onclick="pressPinKey('4')">4</button>
+        <button class="key-btn" onclick="pressPinKey('5')">5</button>
+        <button class="key-btn" onclick="pressPinKey('6')">6</button>
+        <button class="key-btn" onclick="pressPinKey('7')">7</button>
+        <button class="key-btn" onclick="pressPinKey('8')">8</button>
+        <button class="key-btn" onclick="pressPinKey('9')">9</button>
+        <button class="key-btn cancel-btn" onclick="cancelPinModal()">Cancel</button>
+        <button class="key-btn" onclick="pressPinKey('0')">0</button>
+        <button class="key-btn backspace-btn" onclick="deletePinKey()"><i data-lucide="delete"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- I. PAYMENT SUCCESS FULLSCREEN CELEBRATION -->
+  <div id="paymentSuccessScreen" class="fullscreen-overlay hidden">
+    <div class="success-card">
+      <div class="success-checkmark-circle">
+        <i data-lucide="check" class="check-icon"></i>
+      </div>
+      <h2 class="success-title">Payment Successful!</h2>
+      <div class="success-amount" id="successAmountDisplay">₹ 2,742.00</div>
+      <p class="success-recipient" id="successRecipientDisplay">Paid to Dubai Mall Carrefour</p>
+
+      <div class="success-details-card">
+        <div class="detail-line">
+          <span>UPI Ref / UTR:</span>
+          <strong id="successUtrDisplay">UPI/AE/9842103982</strong>
+        </div>
+        <div class="detail-line">
+          <span>Debited From:</span>
+          <span id="successBankDisplay">HDFC Bank (•••• 5642)</span>
+        </div>
+        <div class="detail-line">
+          <span>FX Conversion:</span>
+          <span id="successFxDisplay">120.00 AED ≈ ₹ 2,742.00 INR</span>
+        </div>
+        <div class="detail-line">
+          <span>Date & Time:</span>
+          <span id="successTimeDisplay">Today, 12:45 PM</span>
+        </div>
+      </div>
+
+      <div class="success-actions">
+        <button class="btn-primary btn-block" onclick="dismissSuccessScreen()">
+          <span>Done</span>
+        </button>
+        <button class="btn-outline-full" onclick="downloadReceipt()">
+          <i data-lucide="download"></i> Download Official NPCI Receipt
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- J. BANK BALANCE REVEAL DIALOG -->
+  <div id="balanceModal" class="modal-overlay hidden" onclick="handleModalOverlayClick(event, 'balanceModal')">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h3>Available Bank Balance</h3>
+        <button class="btn-close-sheet" onclick="closeModal('balanceModal')"><i data-lucide="x"></i></button>
+      </div>
+
+      <div class="balance-display-box">
+        <div class="bank-avatar-box">
+          <i data-lucide="landmark"></i>
+        </div>
+        <h4 id="balBankName">HDFC Bank</h4>
+        <p id="balAccNo">Account •••• 5642</p>
+
+        <div class="amount-inr-big" id="balAmountInr">₹ 84,500.50</div>
+        <div class="amount-foreign-tag" id="balAmountForeign">
+          Equivalent to <strong>3,698.05 AED</strong> in Dubai
+        </div>
+      </div>
+
+      <div class="balance-footer-notes">
+        <p><i data-lucide="shield-check" class="icon-xs"></i> Verified by Core Banking System via NPCI UPI Switch</p>
+      </div>
+
+      <button class="btn-primary btn-block" onclick="closeModal('balanceModal')">Done</button>
+    </div>
+  </div>
+
+  <!-- K. LOGIN & GLOBAL UPI HELP GUIDE MODAL -->
+  <div id="helpGuideModal" class="modal-overlay hidden" onclick="handleModalOverlayClick(event, 'helpGuideModal')">
+    <div class="modal-sheet large-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h3>Global UPI & Login Help Guide</h3>
+        <button class="btn-close-sheet" onclick="closeModal('helpGuideModal')"><i data-lucide="x"></i></button>
+      </div>
+      <p class="sheet-sub">Everything you need to know about using UniversalPay in India, Dubai, Singapore & France</p>
+
+      <div class="guide-accordion-container" id="guideAccordionList">
+        <!-- Loaded dynamically from server / KB -->
+      </div>
+
+      <div class="help-action-cta">
+        <a href="tel:18002009999" class="btn-secondary btn-block">
+          <i data-lucide="phone-call"></i> Call 24x7 Global UPI Helpline
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- L. SHOW MY UNIVERSAL QR MODAL -->
+  <div id="myQrModal" class="modal-overlay hidden" onclick="handleModalOverlayClick(event, 'myQrModal')">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h3>My Universal QR Code</h3>
+        <button class="btn-close-sheet" onclick="closeModal('myQrModal')"><i data-lucide="x"></i></button>
+      </div>
+      <p class="sheet-sub">Scan with Google Pay, PhonePe, Paytm, or foreign UPI apps</p>
+
+      <div class="my-qr-box">
+        <div class="qr-code-art">
+          <svg viewBox="0 0 100 100" class="qr-svg-sample">
+            <rect width="100" height="100" fill="#ffffff" />
+            <!-- Outer Markers -->
+            <rect x="10" y="10" width="25" height="25" fill="#1a73e8" rx="4"/>
+            <rect x="15" y="15" width="15" height="15" fill="#ffffff" rx="2"/>
+            <rect x="18" y="18" width="9" height="9" fill="#1a73e8" rx="1"/>
+
+            <rect x="65" y="10" width="25" height="25" fill="#1a73e8" rx="4"/>
+            <rect x="70" y="15" width="15" height="15" fill="#ffffff" rx="2"/>
+            <rect x="73" y="18" width="9" height="9" fill="#1a73e8" rx="1"/>
+
+            <rect x="10" y="65" width="25" height="25" fill="#1a73e8" rx="4"/>
+            <rect x="15" y="70" width="15" height="15" fill="#ffffff" rx="2"/>
+            <rect x="18" y="73" width="9" height="9" fill="#1a73e8" rx="1"/>
+
+            <!-- Center Pattern Dots -->
+            <circle cx="50" cy="50" r="10" fill="#1a73e8" />
+            <circle cx="42" cy="22" r="3" fill="#1a73e8" />
+            <circle cx="58" cy="22" r="3" fill="#1a73e8" />
+            <circle cx="50" cy="35" r="3" fill="#1a73e8" />
+            <circle cx="35" cy="50" r="3" fill="#1a73e8" />
+            <circle cx="65" cy="50" r="3" fill="#1a73e8" />
+            <circle cx="45" cy="75" r="4" fill="#1a73e8" />
+            <circle cx="75" cy="75" r="4" fill="#1a73e8" />
+            <circle cx="85" cy="55" r="3" fill="#1a73e8" />
+          </svg>
+        </div>
+        <h4 class="qr-user-name">Prakash Sharma</h4>
+        <div class="qr-user-vpa">prakash@universalpay</div>
+        <div class="qr-flag-pills">
+          <span>Accepts: ₹ INR • د.إ AED • S$ SGD • € EUR</span>
+        </div>
+      </div>
+
+      <button class="btn-primary btn-block" onclick="closeModal('myQrModal')">Done</button>
+    </div>
+  </div>
+
+  <!-- M. SCRATCH CARD REWARDS MODAL -->
+  <div id="scratchCardModal" class="modal-overlay hidden" onclick="handleModalOverlayClick(event, 'scratchCardModal')">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h3>Google Pay Scratch Card</h3>
+        <button class="btn-close-sheet" onclick="closeModal('scratchCardModal')"><i data-lucide="x"></i></button>
+      </div>
+
+      <div class="scratch-card-wrapper">
+        <div class="scratch-card" id="scratchCardArea" onclick="scratchRewardCard()">
+          <div class="scratch-cover" id="scratchCover">
+            <span class="cover-text">Tap or Scratch to Reveal</span>
+            <div class="sparkles">✨ ✨ ✨</div>
+          </div>
+          <div class="scratch-prize">
+            <div class="prize-emoji">🎉</div>
+            <div class="prize-amount">₹ 75 Cashback</div>
+            <p>Added to your UniversalPay Balance</p>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-primary btn-block mt-16" onclick="closeModal('scratchCardModal')">Claim to Wallet</button>
+    </div>
+  </div>
+
+  <!-- N. TOAST NOTIFICATION CONTAINER -->
+  <div id="toastNotification" class="toast-popup hidden">
+    <i data-lucide="info" id="toastIcon"></i>
+    <span id="toastMessage">Notification message</span>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/app.js"></script>
+</body>
+</html>

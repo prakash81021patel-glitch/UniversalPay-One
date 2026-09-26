@@ -1,0 +1,20 @@
+{
+  "name": "universalpay-one",
+  "version": "1.0.0",
+  "description": "UniversalPay One - Global UPI Payments App for India, Dubai (UAE), and Worldwide",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  },
+  "keywords": ["upi", "global-upi", "google-pay", "cross-border-payment", "dubai-upi", "fintech"],
+  "author": "UniversalPay One Team",
+  "license": "MIT"
+}
